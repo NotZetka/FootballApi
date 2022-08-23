@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FootballApi.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FootballApi.Controllers
 {
@@ -6,10 +7,17 @@ namespace FootballApi.Controllers
     [Route("")]
     public class ClubsController: ControllerBase
     {
-        [HttpGet]
-        public ActionResult<string> Hello()
+        private readonly FootballDBContext dBContext;
+
+        public ClubsController(FootballDBContext dBContext)
         {
-            return Ok("Hello");
+            this.dBContext = dBContext;
+        }
+        [HttpGet]
+        public ActionResult<IEnumerable<Club>> GetAll()
+        {
+            var clubs = dBContext.Clubs.ToList();
+            return Ok(clubs);
         }
     }
 }
