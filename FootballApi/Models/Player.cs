@@ -1,4 +1,6 @@
-﻿namespace FootballApi.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace FootballApi.Models
 {
     public class Player
     {
@@ -8,5 +10,6 @@
         public int Age { get; set; }
         public string Country { get; set; }
         public virtual Club Club { get; set; }
+        public int ClubId { get; set; }
     }
 }
