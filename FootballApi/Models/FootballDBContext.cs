@@ -20,7 +20,6 @@ namespace FootballApi.Models
             {
                 mb.Property(p => p.Name).IsRequired().HasMaxLength(30);
                 mb.Property(p => p.Country).IsRequired();
-                
             });
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
