@@ -7,6 +7,7 @@ namespace FootballApi.Models
         private readonly string connectionString = "Server=(localdb)\\mssqllocaldb;Database=FootballDb;Trusted_Connection=True;";
         public DbSet<Club> Clubs { get; set; }
         public DbSet<Player> Players { get; set; }
+        public DbSet<ApiUser> Users { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -20,6 +21,11 @@ namespace FootballApi.Models
             {
                 mb.Property(p => p.Name).IsRequired().HasMaxLength(30);
                 mb.Property(p => p.Country).IsRequired();
+            });
+            modelBuilder.Entity<ApiUser>(mb =>
+            {
+                mb.Property(u => u.Email).IsRequired();
+                mb.Property(u => u.HashedPassword).IsRequired();
             });
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

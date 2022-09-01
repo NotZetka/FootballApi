@@ -1,5 +1,6 @@
 using FootballApi.Models;
 using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.Identity;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +12,7 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
 );
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<FootballDBContext>();
+builder.Services.AddScoped<IPasswordHasher<ApiUser>,PasswordHasher<ApiUser>>();
 
 var app = builder.Build();
 
