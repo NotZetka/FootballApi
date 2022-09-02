@@ -2,6 +2,10 @@
 using FootballApi.Models.UserOperations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace FootballApi.Controllers
 {
@@ -11,11 +15,13 @@ namespace FootballApi.Controllers
     {
         private readonly FootballDBContext dBContext;
         private readonly IPasswordHasher<ApiUser> passwordHasher;
+        private readonly AuthenticationSettings authenticationSettings;
 
-        public UserController(FootballDBContext dBContext, IPasswordHasher<ApiUser> passwordHasher)
+        public UserController(FootballDBContext dBContext, IPasswordHasher<ApiUser> passwordHasher, AuthenticationSettings authenticationSettings)
         {
             this.dBContext = dBContext;
             this.passwordHasher = passwordHasher;
+            this.authenticationSettings = authenticationSettings;
         }
 
         public IPasswordHasher<ApiUser> PasswordHasher { get; }
@@ -33,7 +39,22 @@ namespace FootballApi.Controllers
             {
                 return BadRequest("Invalid password");
             }
-            return Ok("");
+            var claims = new List<Claim>()
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Email, user.Email.ToString()),
+                new Claim(ClaimTypes.Role, user.Role.ToString())
+            };
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authenticationSettings.JwtKey));
+            var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var expires = DateTime.Now.AddDays(authenticationSettings.JwtExpireDays);
+            var token = new JwtSecurityToken(authenticationSettings.JwtIssuer,
+                            authenticationSettings.JwtIssuer,
+                            claims,
+                            expires: expires,
+                            signingCredentials: cred);
+            var tokenHandler = new JwtSecurityTokenHandler();
+            return Ok(tokenHandler.WriteToken(token));
         }
         [HttpPost("register")]
         public ActionResult register([FromBody]CreateUser data)
