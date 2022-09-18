@@ -1,4 +1,5 @@
-﻿using FootballApi.Models;
+﻿using FootballApi.Exceptions;
+using FootballApi.Models;
 using FootballApi.Models.Create;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -25,14 +26,14 @@ namespace FootballApi.Controllers
         public ActionResult<Player> Get([FromRoute]int id)
         {
             var player = dbContext.Players.FirstOrDefault(x => x.Id == id);
-            if(player == null) return NotFound("Player not found");
+            if(player == null) throw new NotFoundException($"player with id:{id} not found");
             return Ok(player);
         }
         [HttpPost("add")]
         public ActionResult Add([FromBody] CreatePlayer playerData)
         {
             Club club = dbContext.Clubs.Where(c => c.Name == "NoClub").FirstOrDefault();
-            if(!ModelState.IsValid) return BadRequest(ModelState);
+            if(!ModelState.IsValid) throw new BadRequestException("Invalid data");
             Player player = new()
             {
                 Name = playerData.Name,

@@ -1,4 +1,5 @@
-﻿using FootballApi.Models;
+﻿using FootballApi.Exceptions;
+using FootballApi.Models;
 using FootballApi.Models.Create;
 using FootballApi.Models.Update;
 using Microsoft.AspNetCore.Mvc;
@@ -30,14 +31,14 @@ namespace FootballApi.Controllers
                 .Include(c => c.Players)
                 .Where(c => c.Name == name)
                 .FirstOrDefault();
-            if (club is null) return NotFound();
+            if (club is null) throw new NotFoundException("Club not found");
             return Ok(club);
         }
         [HttpDelete("{name}")]
         public ActionResult Delete([FromRoute]string name)
         {
             var club = dbContext.Clubs.Where(c => c.Name == name).FirstOrDefault();
-            if (club is null) return NotFound();
+            if (club is null) throw new NotFoundException("Club not found");
             dbContext.Clubs.Remove(club);
             dbContext.SaveChanges();
             return Ok();
@@ -46,7 +47,7 @@ namespace FootballApi.Controllers
         public ActionResult<Club> Update([FromRoute] string name, [FromBody] UpdateClub clubData)
         {
             Club club = dbContext.Clubs.Where(c=>c.Name == name).FirstOrDefault();
-            if (club is null) return NotFound();
+            if (club is null) throw new NotFoundException("Club not found");
             if (clubData.Country != "") { club.Country = clubData.Country; }
             if(clubData.City != "") { club.City = clubData.City; }
             dbContext.SaveChanges();
@@ -55,9 +56,9 @@ namespace FootballApi.Controllers
         [HttpPost("add")]
         public ActionResult AddClub([FromBody]CreateClub clubData)
         {
-            if(!ModelState.IsValid) return BadRequest(ModelState);
+            if(!ModelState.IsValid) throw new BadRequestException("Invalid data");
             var clubNames = dbContext.Clubs.Select(c => c.Name).ToList();
-            if (clubNames.Contains(clubData.Name)) return Conflict("Name already exists");
+            if (clubNames.Contains(clubData.Name)) throw new ConflictException("Name already exists");
             Club club = new()
             {
                 Name = clubData.Name,
@@ -72,8 +73,8 @@ namespace FootballApi.Controllers
         public ActionResult AddPlayer([FromRoute] string name, [FromBody] CreatePlayer playerData)
         {
             var club = dbContext.Clubs.Where(c => c.Name == name).FirstOrDefault();
-            if(club is null) return NotFound(name);
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (club is null) throw new NotFoundException("Club not found");
+            if (!ModelState.IsValid) throw new Exception("Invalid data");
             Player player = new()
             {
                 Name = playerData.Name,
@@ -89,11 +90,11 @@ namespace FootballApi.Controllers
         public ActionResult MovePlayer([FromRoute] string name, [FromBody] MovePlayer movePlayer)
         {
             var club = dbContext.Clubs.Where(c => c.Name == name).FirstOrDefault();
-            if (club is null) return NotFound(name);
+            if (club is null) throw new NotFoundException("Club not found");
             var newClub = dbContext.Clubs.Where(c => c.Name == movePlayer.clubName).FirstOrDefault();
-            if (newClub is null) return NotFound("New club not found");
+            if (newClub is null) throw new NotFoundException("New club not found");
             var player = dbContext.Players.FirstOrDefault(p => p.Id == movePlayer.playerId);
-            if (player is null) return NotFound("Player not found");
+            if (player is null) throw new NotFoundException("Player not found");
             club.Players.Remove(player);
             newClub.Players.Add(player);
             dbContext.SaveChanges();

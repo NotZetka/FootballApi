@@ -1,4 +1,5 @@
-﻿using FootballApi.Models;
+﻿using FootballApi.Exceptions;
+using FootballApi.Models;
 using FootballApi.Models.UserOperations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -32,12 +33,12 @@ namespace FootballApi.Controllers
             var user = dBContext.Users.Where(u=>u.Email==data.Email).FirstOrDefault();
             if(user is null)
             {
-                return BadRequest("Invalid email");
+                throw new UnauthorizedException("Invalid email");
             }
             var result = passwordHasher.VerifyHashedPassword(user,user.HashedPassword,data.Password);
             if (result == PasswordVerificationResult.Failed)
             {
-                return BadRequest("Invalid password");
+                throw new UnauthorizedException("Invalid password");
             }
             var claims = new List<Claim>()
             {
