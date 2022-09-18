@@ -1,6 +1,7 @@
 using FootballApi;
 using FootballApi.Middleware;
 using FootballApi.Models;
+using FootballApi.Services;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -18,7 +19,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<FootballDBContext>();
 builder.Services.AddScoped<IPasswordHasher<ApiUser>,PasswordHasher<ApiUser>>();
 builder.Services.AddScoped<ErrorHandlingMiddleware>();
-
+builder.Services.AddScoped<IClubsControllerService,ClubsControllerService>();
+builder.Services.AddScoped<IPlayersControllerService, PlayersControllerService>();
 var authenticationSettings = new AuthenticationSettings();
 builder.Configuration.GetSection("Authentication").Bind(authenticationSettings);
 builder.Services.AddSingleton(authenticationSettings);

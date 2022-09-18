@@ -1,6 +1,7 @@
 ﻿using FootballApi.Exceptions;
 using FootballApi.Models;
 using FootballApi.Models.Create;
+using FootballApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,39 +11,29 @@ namespace FootballApi.Controllers
     [Route("FootballApi/Players")]
     public class PlayersController : ControllerBase
     {
-        private readonly FootballDBContext dbContext;
+        private readonly IPlayersControllerService playersControllerService;
 
-        public PlayersController(FootballDBContext dBContext)
+        public PlayersController(IPlayersControllerService playersControllerService)
         {
-            this.dbContext = dBContext;
+            this.playersControllerService = playersControllerService;
         }
         [HttpGet]
         public ActionResult<IEnumerable<Player>> GetAll()
         {
-            var players = dbContext.Players.ToList();
+            var players = playersControllerService.getAll();
             return Ok(players);
         }
         [HttpGet("{id}")]
         public ActionResult<Player> Get([FromRoute]int id)
         {
-            var player = dbContext.Players.FirstOrDefault(x => x.Id == id);
-            if(player == null) throw new NotFoundException($"player with id:{id} not found");
+            var player = playersControllerService.get(id);
             return Ok(player);
         }
         [HttpPost("add")]
         public ActionResult Add([FromBody] CreatePlayer playerData)
         {
-            Club club = dbContext.Clubs.Where(c => c.Name == "NoClub").FirstOrDefault();
-            if(!ModelState.IsValid) throw new BadRequestException("Invalid data");
-            Player player = new()
-            {
-                Name = playerData.Name,
-                Surname = playerData.Surname,
-                Country = playerData.Country,
-                Age = playerData.Age
-            };
-            club.Players.Add(player);
-            dbContext.SaveChanges();
+            if (!ModelState.IsValid) throw new BadRequestException("Invalid data");
+            var player = playersControllerService.add(playerData);
             return Created($"/{player.Id}", null);
         }
     }

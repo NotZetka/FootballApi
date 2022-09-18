@@ -2,6 +2,7 @@
 using FootballApi.Models;
 using FootballApi.Models.Create;
 using FootballApi.Models.Update;
+using FootballApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,93 +12,55 @@ namespace FootballApi.Controllers
     [Route("FootballApi/Clubs")]
     public class ClubsController: ControllerBase
     {
-        private readonly FootballDBContext dbContext;
+        private readonly IClubsControllerService clubsControllerService;
 
-        public ClubsController(FootballDBContext dBContext)
+        public ClubsController(FootballDBContext dBContext, IClubsControllerService clubsControllerService)
         {
-            this.dbContext = dBContext;
+            this.clubsControllerService = clubsControllerService;
         }
         [HttpGet]
         public ActionResult<IEnumerable<Club>> GetAll()
         {
-            var clubs = dbContext.Clubs.Include(c=>c.Players).ToList();
+            var clubs = clubsControllerService.getAll();
             return Ok(clubs);
         }
         [HttpGet("{name}")]
-        public ActionResult<IEnumerable<Club>> Get([FromRoute]string name)
+        public ActionResult<Club> Get([FromRoute]string name)
         {
-            var club = dbContext
-                .Clubs
-                .Include(c => c.Players)
-                .Where(c => c.Name == name)
-                .FirstOrDefault();
-            if (club is null) throw new NotFoundException("Club not found");
+            var club = clubsControllerService.get(name);
             return Ok(club);
         }
         [HttpDelete("{name}")]
         public ActionResult Delete([FromRoute]string name)
         {
-            var club = dbContext.Clubs.Where(c => c.Name == name).FirstOrDefault();
-            if (club is null) throw new NotFoundException("Club not found");
-            dbContext.Clubs.Remove(club);
-            dbContext.SaveChanges();
+            clubsControllerService.delete(name);
             return Ok();
         }
         [HttpPut("{name}")]
         public ActionResult<Club> Update([FromRoute] string name, [FromBody] UpdateClub clubData)
         {
-            Club club = dbContext.Clubs.Where(c=>c.Name == name).FirstOrDefault();
-            if (club is null) throw new NotFoundException("Club not found");
-            if (clubData.Country != "") { club.Country = clubData.Country; }
-            if(clubData.City != "") { club.City = clubData.City; }
-            dbContext.SaveChanges();
+            var club = clubsControllerService.update(name, clubData);
             return Ok(club);
         }
         [HttpPost("add")]
         public ActionResult AddClub([FromBody]CreateClub clubData)
         {
-            if(!ModelState.IsValid) throw new BadRequestException("Invalid data");
-            var clubNames = dbContext.Clubs.Select(c => c.Name).ToList();
-            if (clubNames.Contains(clubData.Name)) throw new ConflictException("Name already exists");
-            Club club = new()
-            {
-                Name = clubData.Name,
-                City = clubData.City,
-                Country = clubData.Country                
-            };
-            dbContext.Clubs.Add(club);
-            dbContext.SaveChanges();
+            if (!ModelState.IsValid) throw new BadRequestException("Invalid data");
+            var club = clubsControllerService.addClub(clubData);
             return Created($"/{club.Name}", null);
         }
         [HttpPost("{name}/addPlayer")]
         public ActionResult AddPlayer([FromRoute] string name, [FromBody] CreatePlayer playerData)
         {
-            var club = dbContext.Clubs.Where(c => c.Name == name).FirstOrDefault();
-            if (club is null) throw new NotFoundException("Club not found");
             if (!ModelState.IsValid) throw new Exception("Invalid data");
-            Player player = new()
-            {
-                Name = playerData.Name,
-                Surname = playerData.Surname,
-                Country = playerData.Country,
-                Age = playerData.Age
-            };
-            club.Players.Add(player);
-            dbContext.SaveChanges();
+            var club = clubsControllerService.addPlayer(name, playerData);
             return Ok(club);
         }
         [HttpPut("{name}/movePlayer")]
         public ActionResult MovePlayer([FromRoute] string name, [FromBody] MovePlayer movePlayer)
         {
-            var club = dbContext.Clubs.Where(c => c.Name == name).FirstOrDefault();
-            if (club is null) throw new NotFoundException("Club not found");
-            var newClub = dbContext.Clubs.Where(c => c.Name == movePlayer.clubName).FirstOrDefault();
-            if (newClub is null) throw new NotFoundException("New club not found");
-            var player = dbContext.Players.FirstOrDefault(p => p.Id == movePlayer.playerId);
-            if (player is null) throw new NotFoundException("Player not found");
-            club.Players.Remove(player);
-            newClub.Players.Add(player);
-            dbContext.SaveChanges();
+            if (!ModelState.IsValid) throw new Exception("Invalid data");
+            clubsControllerService.movePlayer(name, movePlayer);
             return Ok();
         }
         
