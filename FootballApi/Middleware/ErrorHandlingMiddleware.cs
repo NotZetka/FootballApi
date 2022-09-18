@@ -12,7 +12,7 @@ namespace FootballApi.Middleware
             }
             catch (NotFoundException ex)
             {
-                context.Response.StatusCode = 400;
+                context.Response.StatusCode = 404;
                 context.Response.WriteAsync(ex.Message);
             }
             catch (UnauthorizedException ex)
@@ -27,7 +27,7 @@ namespace FootballApi.Middleware
             }
             catch(BadRequestException ex)
             {
-                context.Response.StatusCode = 500;
+                context.Response.StatusCode = 400;
                 context.Response.WriteAsync(ex.Message);
             }
             
