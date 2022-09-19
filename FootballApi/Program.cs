@@ -21,6 +21,7 @@ builder.Services.AddScoped<IPasswordHasher<ApiUser>,PasswordHasher<ApiUser>>();
 builder.Services.AddScoped<ErrorHandlingMiddleware>();
 builder.Services.AddScoped<IClubsControllerService,ClubsControllerService>();
 builder.Services.AddScoped<IPlayersControllerService, PlayersControllerService>();
+builder.Services.AddScoped<IUserControllerService, UserControllerService>();
 var authenticationSettings = new AuthenticationSettings();
 builder.Configuration.GetSection("Authentication").Bind(authenticationSettings);
 builder.Services.AddSingleton(authenticationSettings);
