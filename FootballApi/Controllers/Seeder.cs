@@ -43,7 +43,12 @@ namespace FootballApi.Controllers
             dBContext.SaveChanges();
             return Ok();
         }
-
+        [HttpPost("Seed")]
+        public ActionResult SeedRoles()
+        {
+            seedRoles();
+            return Ok();
+        }
         void clear()
         {
             var players = dBContext.Players.ToList();
@@ -51,6 +56,19 @@ namespace FootballApi.Controllers
             var clubs = dBContext.Clubs.ToList();
             dBContext.Clubs.RemoveRange(clubs);
             dBContext.SaveChanges();
+        }
+        void seedRoles()
+        {
+            if (!dBContext.Roles.Any())
+            {
+                var roles = new List<Role>
+                {
+                    new Role() { Name = "User" },
+                    new Role() { Name = "Admin" }
+                };
+                dBContext.Roles.AddRange(roles);
+                dBContext.SaveChanges();
+            }
         }
     }
 }

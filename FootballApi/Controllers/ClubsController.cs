@@ -3,6 +3,7 @@ using FootballApi.Models;
 using FootballApi.Models.Create;
 using FootballApi.Models.Update;
 using FootballApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,15 +11,17 @@ namespace FootballApi.Controllers
 {
     [ApiController]
     [Route("FootballApi/Clubs")]
+    [Authorize]
     public class ClubsController: ControllerBase
     {
         private readonly IClubsControllerService clubsControllerService;
 
-        public ClubsController(FootballDBContext dBContext, IClubsControllerService clubsControllerService)
+        public ClubsController(IClubsControllerService clubsControllerService)
         {
             this.clubsControllerService = clubsControllerService;
         }
         [HttpGet]
+        [AllowAnonymous]
         public ActionResult<IEnumerable<Club>> GetAll()
         {
             var clubs = clubsControllerService.getAll();

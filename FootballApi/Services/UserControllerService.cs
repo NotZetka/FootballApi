@@ -2,6 +2,7 @@
 using FootballApi.Models;
 using FootballApi.Models.UserOperations;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -33,10 +34,10 @@ namespace FootballApi.Services
 
         public string login(LoginUser data)
         {
-            var user = dBContext.Users.Where(u => u.Email == data.Email).FirstOrDefault();
+            var user = dBContext.Users.Include(u=>u.Role).Where(u => u.Email == data.Email).FirstOrDefault();
             if (user is null)
             {
-                throw new UnauthorizedException("Invalid email");
+                throw new BadRequestException("Invalid email");
             }
             var result = passwordHasher.VerifyHashedPassword(user, user.HashedPassword, data.Password);
             if (result == PasswordVerificationResult.Failed)
@@ -46,8 +47,8 @@ namespace FootballApi.Services
             var claims = new List<Claim>()
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Email, user.Email.ToString()),
-                new Claim(ClaimTypes.Role, user.Role.ToString())
+                new Claim(ClaimTypes.Name, user.Email),
+                new Claim(ClaimTypes.Role, user.Role.Name)
             };
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authenticationSettings.JwtKey));
             var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -68,8 +69,8 @@ namespace FootballApi.Services
             {
                 throw new BadRequestException("Email is already taken, try to login");
             }
-
-            ApiUser user = new() { Email = data.Email };
+            var role = dBContext.Roles.Where(r => r.Name == "User").First();
+            ApiUser user = new() { Email = data.Email, Role = role };
             var hashedPassword = passwordHasher.HashPassword(user, data.Password);
             user.HashedPassword = hashedPassword;
             dBContext.Users.Add(user);

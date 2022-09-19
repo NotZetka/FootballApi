@@ -1,4 +1,5 @@
 using FootballApi;
+using FootballApi.Controllers;
 using FootballApi.Middleware;
 using FootballApi.Models;
 using FootballApi.Services;
@@ -44,12 +45,9 @@ builder.Services.AddAuthentication(option =>
 
 
 var app = builder.Build();
-
+// Configure the HTTP request pipeline.
 app.UseSwagger();
 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "FootBall API"));
-
-
-// Configure the HTTP request pipeline.
 app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseAuthentication();
 app.UseHttpsRedirection();

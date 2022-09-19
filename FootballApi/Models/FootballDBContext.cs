@@ -8,6 +8,7 @@ namespace FootballApi.Models
         public DbSet<Club> Clubs { get; set; }
         public DbSet<Player> Players { get; set; }
         public DbSet<ApiUser> Users { get; set; }
+        public DbSet<Role> Roles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -27,6 +28,9 @@ namespace FootballApi.Models
                 mb.Property(u => u.Email).IsRequired();
                 mb.Property(u => u.HashedPassword).IsRequired();
             });
+            modelBuilder.Entity<Role>()
+                .Property(r => r.Name)
+                .IsRequired();
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

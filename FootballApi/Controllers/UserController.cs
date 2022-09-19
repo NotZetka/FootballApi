@@ -11,29 +11,34 @@ using System.Text;
 
 namespace FootballApi.Controllers
 {
-    [ApiController]
+
     [Route("Users")]
+    [ApiController]
     public class UserController : ControllerBase
     {
 
-        private readonly UserControllerService userControllerService;
+        private readonly IUserControllerService userControllerService;
 
-        public UserController(UserControllerService userControllerService)
+        public UserController(IUserControllerService userControllerService)
         {
             this.userControllerService = userControllerService;
         }
 
-        public IPasswordHasher<ApiUser> PasswordHasher { get; }
 
         [HttpPost("login")]
         public ActionResult<string> login([FromBody]LoginUser data)
         {
-            return userControllerService.login(data);
+            return Ok(userControllerService.login(data));
         }
         [HttpPost("register")]
         public ActionResult register([FromBody]CreateUser data)
         {
             userControllerService.register(data);
+            return Ok();
+        }
+        [HttpGet]
+        public ActionResult test()
+        {
             return Ok();
         }
     }
