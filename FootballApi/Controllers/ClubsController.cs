@@ -27,25 +27,28 @@ namespace FootballApi.Controllers
             var clubs = clubsControllerService.getAll();
             return Ok(clubs);
         }
-        [HttpGet("{name}")]
+        [HttpGet("{name}")]        
         public ActionResult<Club> Get([FromRoute]string name)
         {
             var club = clubsControllerService.get(name);
             return Ok(club);
         }
         [HttpDelete("{name}")]
+        [Authorize(Roles = "Admin")]
         public ActionResult Delete([FromRoute]string name)
         {
             clubsControllerService.delete(name);
             return Ok();
         }
         [HttpPut("{name}")]
+        [Authorize(Roles = "Admin")]
         public ActionResult<Club> Update([FromRoute] string name, [FromBody] UpdateClub clubData)
         {
             var club = clubsControllerService.update(name, clubData);
             return Ok(club);
         }
         [HttpPost("add")]
+        [Authorize(Roles = "Admin")]
         public ActionResult AddClub([FromBody]CreateClub clubData)
         {
             if (!ModelState.IsValid) throw new BadRequestException("Invalid data");
@@ -53,6 +56,7 @@ namespace FootballApi.Controllers
             return Created($"/{club.Name}", null);
         }
         [HttpPost("{name}/addPlayer")]
+        [Authorize(Roles = "Admin")]
         public ActionResult AddPlayer([FromRoute] string name, [FromBody] CreatePlayer playerData)
         {
             if (!ModelState.IsValid) throw new Exception("Invalid data");
@@ -60,6 +64,7 @@ namespace FootballApi.Controllers
             return Ok(club);
         }
         [HttpPut("{name}/movePlayer")]
+        [Authorize(Roles = "Admin")]
         public ActionResult MovePlayer([FromRoute] string name, [FromBody] MovePlayer movePlayer)
         {
             if (!ModelState.IsValid) throw new Exception("Invalid data");

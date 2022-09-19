@@ -2,6 +2,7 @@
 using FootballApi.Models;
 using FootballApi.Models.Create;
 using FootballApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +10,7 @@ namespace FootballApi.Controllers
 {
     [ApiController]
     [Route("FootballApi/Players")]
+    [Authorize]
     public class PlayersController : ControllerBase
     {
         private readonly IPlayersControllerService playersControllerService;
@@ -30,6 +32,7 @@ namespace FootballApi.Controllers
             return Ok(player);
         }
         [HttpPost("add")]
+        [Authorize(Roles = "Admin")]
         public ActionResult Add([FromBody] CreatePlayer playerData)
         {
             if (!ModelState.IsValid) throw new BadRequestException("Invalid data");
